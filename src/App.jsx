@@ -36,6 +36,7 @@ function App() {
 
   const [tracks, setTracks] = useState([])
   const [topArtists, setTopArtists] = useState([])
+  const [chart, setChart] = useState([])
 
   useEffect(() => {
     function getUsername(){
@@ -44,7 +45,10 @@ function App() {
       const newUrl = window.location.origin + window.location.pathname + (username.replace(/\s/g, '') !== '' ? '?' + params.toString() : '');
       window.history.pushState({}, '', newUrl);
     }
+    getUsername() 
+  }, [username])
 
+  useEffect(() => {
     async function getRecent(){
       if(username.replace(/\s/g, '') !== ''){
         await axios.get(API(username, 'user.getrecenttracks', (!expandRecent ? '9' : '30')))
@@ -60,7 +64,10 @@ function App() {
         setLoading(true)
       }
     }
+    getRecent()
+  }, [username, expandRecent])
 
+  useEffect(() => {
     async function getTopArtists(){
       if(username.replace(/\s/g, '') !== ''){
         await axios.get(API(username, 'user.gettopartists', (!expandArtist ? '5' : '10')))
@@ -73,18 +80,23 @@ function App() {
           //   } : {}),            
           // })))
           setTopArtists(response.data.topartists.artist)
-          setLoading(false)
-        })
-        .catch(error => {
-          setLoading(true)
         })
       }
     }
-    
-    getUsername() 
-    getRecent()
     getTopArtists()
-  }, [username, expandRecent, expandArtist])
+  }, [username, expandArtist])
+
+  useEffect(() => {
+    async function getChart(){
+      if(username.replace(/\s/g, '') !== ''){
+        await axios.get(API(username, 'user.getweeklyalbumchart', (!expandArtist ? '10' : '10')))
+        .then((response) => {
+          setChart(response.data.weeklyalbumchart.album)
+        })
+      }
+    }
+    getChart()
+  })
 
   return (
     <div className='container'>
@@ -95,19 +107,21 @@ function App() {
       {
         !isLoading &&
         <>
-          <h1>Currently Listening To</h1>
           {
-            tracks[0] ?
+            tracks[0] && tracks[0].hasOwnProperty('@attr') ?
             (
-              <a href={tracks[0].url} target='_blank' title={tracks[0].artist['#text']+' - '+tracks[0].name}>
-                <div className='card card-expand'>
-                  <img src={tracks[0].image[1]['#text']} />
-                  <div>
-                    <p><strong>{tracks[0].name}</strong></p>
-                    <p>{tracks[0].artist['#text']}</p>
+              <>
+                <h1>Currently Listening To</h1>
+                <a href={tracks[0].url} target='_blank' title={tracks[0].artist['#text']+' - '+tracks[0].name}>
+                  <div className='card card-expand'>
+                    <img src={tracks[0].image[1]['#text']} />
+                    <div>
+                      <p><strong>{tracks[0].name}</strong></p>
+                      <p>{tracks[0].artist['#text']}</p>
+                    </div>
                   </div>
-                </div>
-              </a>
+                </a>
+              </>
             )
             :
             (
@@ -154,6 +168,17 @@ function App() {
           <div className='center'>
             <button type='button' onClick={ev => setExpandArtist(!expandArtist)}>{!expandArtist ? 'Expand..' : 'Show Less..'}</button>
           </div>
+          {/* <h1>Weekly Chart</h1>
+          <div className='chart'>
+            {
+              chart.map((album, index) => (
+                <div className='album' style={{backgroundImage: `url()`}}>
+                  <p>{album.name}</p>
+                  <p>{album.artist['#text']}</p>
+                </div>
+              ))
+            }
+          </div> */}
         </>
       }
     </div>
