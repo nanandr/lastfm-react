@@ -1,3 +1,14 @@
+@media(max-width: 1080px){
+  body{
+    padding: 8px !important;
+  }
+  input{
+    width: 100% !important;
+  }
+  .container{
+    max-width: 100% !important;
+  }
+}
 html, body{
   padding: 0px;
   margin: 0px;
@@ -6,16 +17,18 @@ body{
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   display: flex;
   justify-content: center;
-  background: #333;
+  width: 100%;
 }
 
 h1, h2, h3, p, a{
   padding: 0px;
   margin: 0px;
   text-decoration: none;
-  color: #eee;
+  color: #333;
 }
-
+a:hover div h3{
+  color: rgb(230, 0, 0);
+}
 p{
   font-size: 16px;
 }
@@ -24,7 +37,6 @@ img{
   filter: brightness(95%);
 }
 strong{
-  color: #eee;
   font-weight: 400;
   font-size: 18px;
 }
@@ -35,15 +47,25 @@ input, button{
 }
 button{
   background: none;
-  color: #ddd;
   border: solid #666 1px;
   cursor: pointer;
   width: 140px;
+  border-radius: 8px;
+  color: rgb(230, 0, 0);
+  border: rgb(230, 0, 0) 1px solid;
+}
+button:hover{
+  background: rgb(230, 0, 0);
+  color: white;
+}
+button:active{
+  box-shadow: rgb(230, 0, 0) 1px 1px 5px;
 }
 header{
   display: flex;
   flex-direction: row;
   gap: 8px;
+  width: 100%;
 }
 header img{
   width: 72px;
@@ -72,17 +94,35 @@ header img{
 .card{
   display: flex;
   flex-direction: row;
-  width: 340px;
+  width: 348px;
   align-items: center;
   gap: 16px;
-  background: #333;
   border-radius: 8px;
   padding: 0px 8px;
   box-sizing: border-box;
-  box-shadow: #222 1px 1px 5px;
+  box-shadow: #aaa 1px 1px 5px;
+}
+.card-expand{
+  width: 100% !important;
+}
+.card:hover{
+  background: #ddd;
+}
+.card:active{
+  transform: scale(0.95);
 }
 .card div{
   overflow: hidden;
   text-overflow: clip;
   white-space: nowrap;
+}
+.artists-list{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.artist-card{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
