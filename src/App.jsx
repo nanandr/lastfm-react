@@ -6,26 +6,6 @@ function API(user, method, limit){
   return 'http://ws.audioscrobbler.com/2.0/?method='+method+'&user='+user+'&limit='+limit+'&api_key=26f69e5b01b21d81e270c03b0e31d09a&format=json'
 }
 
-function getArtistImage(x){
-  const url = 'https://musicbrainz.org/ws/2/artist/' + x + '?inc=url-rels&fmt=json'
-  // return url
-  // let image = null
-  // fetch(url,
-  //     {mode: 'no-cors'}
-  //   )
-  //   .then((response) => {
-  //     const relations = response.relations
-  //     for(let x = 0; x < relations.length; x++){
-  //       if(relations[x].url.resource.includes('https://commons.wikimedia.org/wiki/File:')){
-  //         let imageUrl = relations[x].url.resource.substring(relations[x].url.resource.lastIndexOf('/') + 1)
-  //         image = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/' + imageUrl
-  //       }
-  //     }
-  //   }
-  // )
-  // return image
-}
-
 function App() {
   const [username, setUsername] = useState('')
   const [expandRecent, setExpandRecent] = useState(false)
@@ -65,12 +45,15 @@ function App() {
       }
     }
     getRecent()
+
+    const interval = setInterval(getRecent, 5000)
+    return () => clearInterval(interval)
   }, [username, expandRecent])
 
   useEffect(() => {
     async function getTopArtists(){
       if(username.replace(/\s/g, '') !== ''){
-        await axios.get(API(username, 'user.gettopartists', (!expandArtist ? '5' : '10')))
+        await axios.get(API(username, 'user.gettopartists', (!expandArtist ? '5' : '20')))
         .then((response) => {
           // setTopArtists(response.data.topartists.artist.map(data => ({
           //   name: data.name,
@@ -86,22 +69,55 @@ function App() {
     getTopArtists()
   }, [username, expandArtist])
 
+  // useEffect(() => {
+  //   async function getImage(id, name, artist){
+  //     const api = 'http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=26f69e5b01b21d81e270c03b0e31d09a&format=json'
+  //     const response = await axios.get(api + (id !== null ? '&mbid=' + id : '&album=' + name + '&artist=' + artist))
+  //     return response.data.album.image[3]['#text']
+  //   }
+
+  //   async function getChart(){
+  //     if(username.replace(/\s/g, '') !== ''){
+  //       const response = await axios.get(API(username, 'user.getweeklyalbumchart', (!expandArtist ? '25' : '25')))
+  //       const fillChart = await Promise.all(response.data.weeklyalbumchart.album.map(async (album) => {
+  //         let image = null
+  //         if(album.mbid){
+  //           image = await getImage(album.mbid, null, null)
+  //         }
+  //         else{
+  //           // image = await getImage(null, album.name, album.artist['#text'])
+  //         }
+  //         return {
+  //           name: album.name,
+  //           artist: album.artist['#text'],
+  //           mbid: album.mbid,
+  //           image,
+  //         };
+  //       }))
+  //       setChart(fillChart)
+  //     }
+  //   }
+
+  //   getChart()
+  // }, [username])
+
   useEffect(() => {
+    const api = 'http://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&api_key=26f69e5b01b21d81e270c03b0e31d09a&format=json&limit=25&period=7day'
     async function getChart(){
       if(username.replace(/\s/g, '') !== ''){
-        await axios.get(API(username, 'user.getweeklyalbumchart', (!expandArtist ? '10' : '10')))
+        await axios.get(api + '&user=' + username)
         .then((response) => {
-          setChart(response.data.weeklyalbumchart.album)
+          setChart(response.data.topalbums.album)
         })
       }
     }
     getChart()
-  })
+  }, [username])
 
   return (
     <div className='container'>
       <header>
-        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Lastfm_logo.svg/2560px-Lastfm_logo.svg.png'/>
+        <a href='https://last.fm' target='_blank' title='last.fm'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Lastfm_logo.svg/2560px-Lastfm_logo.svg.png'/></a>
         <input value={username} onChange={ev => setUsername(ev.target.value)} placeholder='Enter lastfm username'/>
       </header>
       {
@@ -125,7 +141,8 @@ function App() {
             )
             :
             (
-              <></>
+              <>
+              </>
             )
           }
           <h1>Recent Tracks</h1>
@@ -157,7 +174,7 @@ function App() {
                   <div className='artist-card'>
                     {/* <img src={artist.image} alt='hello'/> */}
                     {/* <a href={artist.image}>Click me</a> */}
-                    <h3>{artist.name}</h3>
+                    <p><strong>{artist.name}</strong></p>
                     <p>{artist.playcount} Scrobbles</p>
                     {/* <p>{artist.mbid}</p> */}
                   </div>
@@ -168,17 +185,17 @@ function App() {
           <div className='center'>
             <button type='button' onClick={ev => setExpandArtist(!expandArtist)}>{!expandArtist ? 'Expand..' : 'Show Less..'}</button>
           </div>
-          {/* <h1>Weekly Chart</h1>
+          <h1>Weekly Chart</h1>
           <div className='chart'>
             {
               chart.map((album, index) => (
-                <div className='album' style={{backgroundImage: `url()`}}>
+                <div key={index} className='album' style={{backgroundImage: 'url('+album.image[3]['#text']+')'}}>
                   <p>{album.name}</p>
-                  <p>{album.artist['#text']}</p>
+                  <p>{album.artist.name}</p>
                 </div>
               ))
             }
-          </div> */}
+          </div>
         </>
       }
     </div>
