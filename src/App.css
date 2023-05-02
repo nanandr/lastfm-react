@@ -82,6 +82,13 @@ header a img{
   width: 72px;
   object-fit: contain;
 }
+select{
+  box-sizing: border-box;
+  padding: 8px;
+  font-size: medium;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+}
 
 #root{
   width: 100%;
@@ -170,7 +177,16 @@ header a img{
 }
 .album p{
   color: white;
+  text-shadow: #333 1px 1px;
+}
+.album:hover{
+  filter: brightness(80%);
 }
 .mute{
   color: #666 !important;
+}
+.nav-chart{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }

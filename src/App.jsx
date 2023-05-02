@@ -10,7 +10,7 @@ function App() {
   const [username, setUsername] = useState('')
   const [expandRecent, setExpandRecent] = useState(false)
   const [expandArtist, setExpandArtist] = useState(false)
-
+  const [period, setPeriod] = useState('7day')
 
   const [isLoading, setLoading] = useState(true)
 
@@ -69,50 +69,17 @@ function App() {
     getTopArtists()
   }, [username, expandArtist])
 
-  // useEffect(() => {
-  //   async function getImage(id, name, artist){
-  //     const api = 'http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=26f69e5b01b21d81e270c03b0e31d09a&format=json'
-  //     const response = await axios.get(api + (id !== null ? '&mbid=' + id : '&album=' + name + '&artist=' + artist))
-  //     return response.data.album.image[3]['#text']
-  //   }
-
-  //   async function getChart(){
-  //     if(username.replace(/\s/g, '') !== ''){
-  //       const response = await axios.get(API(username, 'user.getweeklyalbumchart', (!expandArtist ? '25' : '25')))
-  //       const fillChart = await Promise.all(response.data.weeklyalbumchart.album.map(async (album) => {
-  //         let image = null
-  //         if(album.mbid){
-  //           image = await getImage(album.mbid, null, null)
-  //         }
-  //         else{
-  //           // image = await getImage(null, album.name, album.artist['#text'])
-  //         }
-  //         return {
-  //           name: album.name,
-  //           artist: album.artist['#text'],
-  //           mbid: album.mbid,
-  //           image,
-  //         };
-  //       }))
-  //       setChart(fillChart)
-  //     }
-  //   }
-
-  //   getChart()
-  // }, [username])
-
   useEffect(() => {
-    const api = 'http://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&api_key=26f69e5b01b21d81e270c03b0e31d09a&format=json&limit=25&period=7day'
     async function getChart(){
       if(username.replace(/\s/g, '') !== ''){
-        await axios.get(api + '&user=' + username)
+        await axios.get(API(username, 'user.gettopalbums', '25&period='+period))
         .then((response) => {
           setChart(response.data.topalbums.album)
         })
       }
     }
     getChart()
-  }, [username])
+  }, [username, period])
 
   return (
     <div className='container'>
@@ -185,14 +152,24 @@ function App() {
           <div className='center'>
             <button type='button' onClick={ev => setExpandArtist(!expandArtist)}>{!expandArtist ? 'Expand..' : 'Show Less..'}</button>
           </div>
-          <h1>Weekly Chart</h1>
+          <div className='nav-chart'>
+            <h1>{period == '7day' ? 'Weekly' : (period == '1month' ? 'Monthly' : (period == '12month' ? 'Yearly' : (period == 'overall' ? 'All Time' : '')))} Chart</h1>
+            <select value={period} onChange={ev => setPeriod(ev.target.value)}>
+              <option value='7day'>1 Week</option>
+              <option value='1month'>1 Month</option>
+              <option value='12month'>1 Year</option>
+              <option value='overall'>All Time</option>
+            </select>
+          </div>
           <div className='chart'>
             {
               chart.map((album, index) => (
-                <div key={index} className='album' style={{backgroundImage: 'url('+album.image[3]['#text']+')'}}>
-                  <p>{album.name}</p>
-                  <p>{album.artist.name}</p>
-                </div>
+                <a key={index} href={album.url} target='_blank' title={album.artist.name+' - '+album.name}>
+                  <div className='album' style={{backgroundImage: 'url('+album.image[3]['#text']+')'}}>
+                    <p>{album.name}</p>
+                    <p>{album.artist.name}</p>
+                  </div>
+                </a>
               ))
             }
           </div>
