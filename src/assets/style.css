@@ -1,5 +1,6 @@
 @media(max-width: 1080px){
   body{
+    box-sizing: border-box;
     padding: 8px !important;
   }
   input{
@@ -7,6 +8,18 @@
   }
   .container{
     max-width: 100% !important;
+  }
+  .album{
+    width: 132px !important;
+    height: 132px !important;
+  }
+  .card-list{
+    width: 100% !important;
+    justify-content: flex-start !important;
+    flex-direction: column !important;
+  }
+  .card{
+    width: 100% !important;
   }
 }
 html, body{
@@ -89,6 +102,9 @@ select{
   border: 1px solid #bbb;
   border-radius: 8px;
 }
+select:hover{
+  cursor: pointer;
+}
 
 #root{
   width: 100%;
@@ -166,18 +182,22 @@ select{
 }
 .album{
   /* flex: 1 0 calc(20% - 20px); */
-  width: 215px;
-  height: 215px;
-  background: #666;
+  width: 216px;
+  height: 216px;
   outline: 1px solid #333;
   padding: 8px;
   box-sizing: border-box;
   background-repeat: no-repeat;
   background-size: cover;
+  display: flex;
+  flex-direction: column;
+}
+.album p:nth-child(1){
+  margin-top: auto;
 }
 .album p{
   color: white;
-  text-shadow: #333 1px 1px;
+  text-shadow: black 1px 1px;
 }
 .album:hover{
   filter: brightness(80%);

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
-import './App.css'
 import axios from 'axios'
 
 function API(user, method, limit){
   return 'http://ws.audioscrobbler.com/2.0/?method='+method+'&user='+user+'&limit='+limit+'&api_key=26f69e5b01b21d81e270c03b0e31d09a&format=json'
 }
 
-function App() {
+export default function App() {
   const [username, setUsername] = useState('')
   const [expandRecent, setExpandRecent] = useState(false)
   const [expandArtist, setExpandArtist] = useState(false)
@@ -81,6 +80,15 @@ function App() {
     getChart()
   }, [username, period])
 
+  function getColor(){
+    const letters = '0123456789ABCDEF'
+    let color = '#'
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)]
+    }
+    return color
+  }
+
   return (
     <div className='container'>
       <header>
@@ -91,26 +99,19 @@ function App() {
         !isLoading &&
         <>
           {
-            tracks[0] && tracks[0].hasOwnProperty('@attr') ?
-            (
-              <>
-                <h1>Currently Listening To</h1>
-                <a href={tracks[0].url} target='_blank' title={tracks[0].artist['#text']+' - '+tracks[0].name}>
-                  <div className='card card-expand'>
-                    <img src={tracks[0].image[1]['#text']} />
-                    <div>
-                      <p><strong>{tracks[0].name}</strong></p>
-                      <p>{tracks[0].artist['#text']}</p>
-                    </div>
+            tracks[0] && tracks[0].hasOwnProperty('@attr') &&
+            <>
+              <h1>Currently Listening To</h1>
+              <a href={tracks[0].url} target='_blank' title={tracks[0].artist['#text']+' - '+tracks[0].name}>
+                <div className='card card-expand'>
+                  <div className='card-img' style={{backgroundImage: 'url('+tracks[0].image[1]['#text']+')', width: '64px', height: '64px'}}></div>
+                  <div>
+                    <p><strong>{tracks[0].name}</strong></p>
+                    <p>{tracks[0].artist['#text']}</p>
                   </div>
-                </a>
-              </>
-            )
-            :
-            (
-              <>
-              </>
-            )
+                </div>
+              </a>
+            </>
           }
           <h1>Recent Tracks</h1>
           <div className='card-list'>
@@ -120,7 +121,7 @@ function App() {
               (
                 <a key={index} href={track.url} target='_blank' title={track.artist['#text']+' - '+track.name}>
                   <div className='card'>
-                    <img src={track.image[1]['#text']} />
+                    <div className='card-img' style={{background: 'url('+track.image[1]['#text']+')', width: '64px', height: '64px'}}></div>
                     <div>
                       <p><strong>{track.name}</strong></p>
                       <p>{track.artist['#text']}</p>
@@ -165,7 +166,7 @@ function App() {
             {
               chart.map((album, index) => (
                 <a key={index} href={album.url} target='_blank' title={album.artist.name+' - '+album.name}>
-                  <div className='album' style={{backgroundImage: 'url('+album.image[3]['#text']+')'}}>
+                  <div className='album' style={{background: 'url('+album.image[3]['#text']+') no-repeat center center / cover'}}>
                     <p>{album.name}</p>
                     <p>{album.artist.name}</p>
                   </div>
@@ -178,5 +179,3 @@ function App() {
     </div>
   )
 }
-
-export default App
