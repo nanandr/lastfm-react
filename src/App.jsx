@@ -2,8 +2,19 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 
 function API(user, method, limit){
-  return 'http://ws.audioscrobbler.com/2.0/?method='+method+'&user='+user+'&limit='+limit+'&api_key=26f69e5b01b21d81e270c03b0e31d09a&format=json'
+  return 'https://ws.audioscrobbler.com/2.0/?method='+method+'&user='+user+'&limit='+limit+'&api_key=26f69e5b01b21d81e270c03b0e31d09a&format=json'
 }
+
+/**
+ * before
+ * example:
+ * API(username, 'user.getrecenttracks', '30')
+ * 
+ * after
+ * x = [{method: ...}, {user: ...}, {limit: ...}]
+ * example:
+ * APIrequest([{method: 'user.getrecenttracks'}, {user: username}, {limit: '10'}])
+ */
 
 export default function App() {
   const [username, setUsername] = useState('')
@@ -17,6 +28,12 @@ export default function App() {
   const [topArtists, setTopArtists] = useState([])
   const [chart, setChart] = useState([])
 
+  /**
+   * need a lifecycle system,
+   * if user goes to website.com?user=username
+   * it should automatically search
+   */
+
   useEffect(() => {
     function getUsername(){
       const params = new URLSearchParams(window.location.search);
@@ -27,6 +44,9 @@ export default function App() {
     getUsername() 
   }, [username])
 
+  /**
+   * separate every chart (recent, top artists, chart) to components for easier management
+   */
   useEffect(() => {
     async function getRecent(){
       if(username.replace(/\s/g, '') !== ''){
@@ -45,22 +65,21 @@ export default function App() {
     }
     getRecent()
 
+    /**
+     * probably not a good idea to use interval?
+     */
     const interval = setInterval(getRecent, 5000)
     return () => clearInterval(interval)
   }, [username, expandRecent])
 
+  /**
+   * separate async functions from useeffect
+   */
   useEffect(() => {
     async function getTopArtists(){
       if(username.replace(/\s/g, '') !== ''){
         await axios.get(API(username, 'user.gettopartists', (!expandArtist ? '5' : '20')))
         .then((response) => {
-          // setTopArtists(response.data.topartists.artist.map(data => ({
-          //   name: data.name,
-          //   ...(data.mbid ? { 
-          //     // image: getArtistImage(data.mbid),
-          //     mbid: data.mbid,
-          //   } : {}),            
-          // })))
           setTopArtists(response.data.topartists.artist)
         })
       }
@@ -79,15 +98,6 @@ export default function App() {
     }
     getChart()
   }, [username, period])
-
-  function getColor(){
-    const letters = '0123456789ABCDEF'
-    let color = '#'
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)]
-    }
-    return color
-  }
 
   return (
     <div className='container'>
@@ -117,7 +127,7 @@ export default function App() {
           <div className='card-list'>
             {
               tracks.map((track, index) => 
-              !track['@attr'] && //removes currently playing song
+              !track['@attr'] && //moves currently playing song from recent to top 
               (
                 <a key={index} href={track.url} target='_blank' title={track.artist['#text']+' - '+track.name}>
                   <div className='card'>
@@ -140,11 +150,8 @@ export default function App() {
               topArtists.map((artist, index) => (
                 <a key={index} href={artist.url} target='_blank' title={artist.name}>
                   <div className='artist-card'>
-                    {/* <img src={artist.image} alt='hello'/> */}
-                    {/* <a href={artist.image}>Click me</a> */}
                     <p><strong>{artist.name}</strong></p>
                     <p>{artist.playcount} Scrobbles</p>
-                    {/* <p>{artist.mbid}</p> */}
                   </div>
                 </a>
               )) 
@@ -154,6 +161,7 @@ export default function App() {
             <button type='button' onClick={ev => setExpandArtist(!expandArtist)}>{!expandArtist ? 'Expand..' : 'Show Less..'}</button>
           </div>
           <div className='nav-chart'>
+            {/* could probably use some formating?? or remove it */}
             <h1>{period == '7day' ? 'Weekly' : (period == '1month' ? 'Monthly' : (period == '12month' ? 'Yearly' : (period == 'overall' ? 'All Time' : '')))} Chart</h1>
             <select value={period} onChange={ev => setPeriod(ev.target.value)}>
               <option value='7day'>1 Week</option>
@@ -162,6 +170,7 @@ export default function App() {
               <option value='overall'>All Time</option>
             </select>
           </div>
+          {/* need proper grid */}
           <div className='chart'>
             {
               chart.map((album, index) => (
